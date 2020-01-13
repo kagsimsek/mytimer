@@ -2,7 +2,8 @@
 
 CheckBeep=$(which beep)
 whereiam=$(dirname $0)
-def_time_file=$whereiam/.mtimer_def_time
+appname=mtimer
+def_time_file=$whereiam/.${appname}_def_time
 
 if [ -f $def_time_file ]
 then
@@ -28,18 +29,18 @@ else
 		echo "Usage:"
 		echo 
 		echo "Help page" 
-		echo "	mtimer --help"
+		echo "	$appname --help"
 		echo "Set default timer value to N seconds"
-		echo "	mtimer --set-default N"
+		echo "	$appname --set-default N"
 		echo "Set timer to N minutes" 
-		echo "	mtimer --minute N"
-		echo "	mtimer -m N"
+		echo "	$appname --minute N"
+		echo "	$appname -m N"
 		echo "Set timer to N hours"
-		echo "	mtimer --hour N"
-		echo "	mtimer -h N"
+		echo "	$appname --hour N"
+		echo "	$appname -h N"
 		echo "Start with default timer value"
 		echo "(Default timer value is 60 seconds)."
-		echo "	mtimer"
+		echo "	$appname"
 		echo 
 		echo "Version 0.1.1."
 		echo "Last modified ks 13 jan 2020."
