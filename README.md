@@ -1,6 +1,6 @@
 Download and make executable:
 
-chmod a+x $HOME/Downloads/mytimer
+chmod a+x $HOME/Downloads/mtimer
 
 Usage:
 
