@@ -364,7 +364,7 @@ else
 				echo "Timer set to $1 second(s)."
 				echo
 				#echo "$time second(s)..."
-				echo $time
+				time_human $time
 				time=$((time-1))
 				sleep 1
 			done
