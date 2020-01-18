@@ -16,7 +16,10 @@ Usage:
 		mtimer -h N 
 	Start with default timer value (Default timer value is 60 seconds) 
 		mtimer
+	Resume from last run
+		mtimer --continue
+		mtimer -c
 
-Version 0.1.1. 
+Version 0.1.4. 
 Last modified ks 14 jan 2020. 
 Free to modify, use, and distribute.
