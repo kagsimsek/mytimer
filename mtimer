@@ -1,0 +1,375 @@
+#!/bin/bash
+
+whereiam=$(dirname $0)
+appname=mtimer
+def_time_file=$whereiam/.${appname}_def_time
+continue_time_file=$whereiam/.${appname}_cont_time
+
+function send_to_continue {
+	t=$1
+	if [ $t -ge 2 ]
+	then
+		echo $t > $continue_time_file
+	else
+		echo "0" > $continue_time_file
+	fi
+}
+
+function time_human {
+	t=$1
+	hours=$((t/3600))
+	minutes=$(( (t-3600*hours)/60 ))
+	seconds=$(( (t-3600*hours-60*minutes) ))
+	send_to_continue $t
+	echo "$hours:$minutes:$seconds"
+}
+
+function beeper {
+	if [ $(uname) == "Linux" ]
+	then
+		i=1
+		while [ $i -le 4 ]
+		do
+		        beep ; sleep 0.15 ; beep ; sleep 0.15 ; beep ; sleep 0.15 ; beep ; sleep 0.6 
+		        i=$((i+1))
+		done
+	else
+		i=1
+		while [ $i -le 4 ]
+		do
+		        printf "\a" ; sleep 0.15 ; printf "\a" ; sleep 0.15 ; printf "\a" ; sleep 0.15 ; printf "\a" ; sleep 0.6 
+		        i=$((i+1))
+		done
+	fi
+}
+
+
+if [ -f $def_time_file ]
+then
+	def_time=$(cat $def_time_file)
+else
+	def_time=60
+fi
+
+unix=$(uname)
+
+### for linux 
+
+if [ $unix == "Linux" ]
+then
+	CheckBeep=$(which beep)
+	if [ -z $CheckBeep ]
+	then
+		clear
+		echo "Install 'beep' and activate:"
+		echo
+		echo "	sudo apt install beep && modprobe pcspkr"
+		echo
+	else
+	if [ -z $1 ]
+	then
+                time=$def_time
+                clear
+                while [ $time -ge 1 ]
+                do
+                        clear
+                        echo "Timer set to default ($def_time seconds)."
+                        echo
+                        #echo "$time second(s)..."
+			time_human $time
+                        time=$((time-1))
+                        sleep 1
+                done
+		beeper
+	else
+		clear
+		case $1 in
+		--help)
+			clear
+			echo "Usage:"
+			echo 
+			echo "Help page" 
+			echo "	$appname --help"
+			echo "Set default timer value to N seconds"
+			echo "	$appname --set-default N"
+			echo "Set timer to N minutes" 
+			echo "	$appname --minute N"
+			echo "	$appname -m N"
+			echo "Set timer to N hours"
+			echo "	$appname --hour N"
+			echo "	$appname -h N"
+			echo "Start with default timer value"
+			echo "(Default timer value is 60 seconds)."
+			echo "	$appname" 
+			echo "Continue from last run"
+			echo "	$appname --continue"
+			echo "	$appname -c"
+			echo
+			echo "Version 0.1.4."
+			echo "Last modified ks 13 jan 2020."
+			echo "Free to modify, use, and distribute."
+			;;
+		--set-default)
+			if [ -z $2 ]
+			then
+				clear
+				echo "Enter default timer value in seconds."
+				echo
+			else
+				echo $2 > $def_time_file
+				clear
+				echo "Default timer value set to $2 second(s)."
+				echo
+			fi
+			;;
+		--minute|-m)
+			if [ -z $2 ]
+			then
+				clear
+				echo "Enter timer value in minutes."
+				echo
+			else
+				minute_time=$2
+				float_time=$(echo "60*$minute_time" | bc)
+				time=${float_time%.*}
+				time_h=$(time_human $time)
+				clear 
+				while [ $time -ge 1 ]
+				do
+					clear
+					echo "Timer set to $minute_time minute(s)."
+					echo
+					#echo "$time second(s)..."
+					time_human $time
+					time=$((time-1))
+					sleep 1
+				done
+				beeper
+			fi
+			;;
+		--hour|-h)
+			if [ -z $2 ]
+			then
+				clear
+				echo "Enter timer value in hours."
+				echo
+			else
+				hour_time=$2
+	                	float_time=$(echo "3600*$hour_time" | bc)
+				time=${float_time%.*}
+	                	clear 
+	                	while [ $time -ge 1 ] 
+	                	do
+	                	        clear
+	                	        echo "Timer set to $hour_time hour(s)."
+	                	        echo
+	                	        #echo "$time second(s)..."
+					time_human $time
+	                	        time=$((time-1))
+	                	        sleep 1
+	                	done
+				beeper
+			fi
+			;;
+		--continue|-c)
+			if [ -s $continue_time_file ]
+			then
+				setto=$(cat $continue_time_file)
+				time=$(cat $continue_time_file)	
+				if [ $time == "0" ]
+				then
+					clear
+					echo "Timer has already ended."
+					echo
+				else
+	                		clear 
+	                		while [ $time -ge 1 ] 
+	                		do
+	                		        clear
+						echo "Now resuming from last run."
+	                		        echo "Timer set to $(time_human $setto)."
+	                		        echo
+	                		        #echo "$time second(s)..."
+						time_human $time
+	                		        time=$((time-1))
+	                		        sleep 1
+	                		done
+					beeper
+				fi
+			else
+				clear
+				echo "You don't have any timer to resume."
+				echo
+			fi
+			;;
+		*)
+			time=$1
+			clear
+			while [ $time -ge 1 ]
+			do
+				clear
+				echo "Timer set to $1 second(s)."
+				echo
+				#echo "$time second(s)..."
+				time_human $time
+				time=$((time-1))
+				sleep 1
+			done
+			beeper
+			;;
+		esac
+	fi
+	fi
+
+### for mac
+
+else	
+	if [ -z $1 ]
+	then
+	        time=$def_time
+                clear
+                while [ $time -ge 1 ]
+                do
+                        clear
+                        echo "Timer set to default ($def_time seconds)."
+                        echo
+                        #echo "$time second(s)..."
+			time_human $time
+                        time=$((time-1))
+                        sleep 1
+                done
+		beeper
+        else
+		case $1 in
+		--help)
+			clear
+			echo "Usage:"
+			echo 
+			echo "Help page" 
+			echo "	$appname --help"
+			echo "Set default timer value to N seconds"
+			echo "	$appname --set-default N"
+			echo "Set timer to N minutes" 
+			echo "	$appname --minute N"
+			echo "	$appname -m N"
+			echo "Set timer to N hours"
+			echo "	$appname --hour N"
+			echo "	$appname -h N"
+			echo "Start with default timer value"
+			echo "(Default timer value is 60 seconds)."
+			echo "	$appname"
+			echo 
+			echo "Version 0.1.4."
+			echo "Last modified ks 13 jan 2020."
+			echo "Free to modify, use, and distribute."
+			;;
+		--set-default)
+			if [ -z $2 ]
+			then
+				clear
+				echo "Enter default timer value in seconds."
+				echo
+			else
+				echo $2 > $def_time_file
+				clear
+				echo "Default timer value set to $2 second(s)."
+				echo
+			fi
+			;;
+		--minute|-m)
+			if [ -z $2 ]
+			then
+				clear
+				echo "Enter timer value in minutes."
+				echo
+			else
+				minute_time=$2
+				float_time=$(echo "60*$minute_time" | bc)
+				time=${float_time%.*}
+				clear 
+				while [ $time -ge 1 ]
+				do
+					clear
+					echo "Timer set to $minute_time minute(s)."
+					echo
+					#echo "$time second(s)..."
+					time_human $time
+					time=$((time-1))
+					sleep 1
+				done
+				beeper
+			fi
+			;;
+		--hour|-h)
+			if [ -z $2 ]
+			then
+				clear
+				echo "Enter timer value in hours."
+				echo
+			else
+				hour_time=$2
+	                	float_time=$(echo "3600*$hour_time" | bc)
+				time=${float_time%.*}
+	                	clear 
+	                	while [ $time -ge 1 ] 
+	                	do
+	                	        clear
+	                	        echo "Timer set to $hour_time hour(s)."
+	                	        echo
+	                	        #echo "$time second(s)..."
+					time_human $time
+	                	        time=$((time-1))
+	                	        sleep 1
+	                	done
+				beeper
+			fi
+			;;
+		--continue|-c)
+			if [ -s $continue_time_file ]
+			then
+				setto=$(cat $continue_time_file)
+				time=$(cat $continue_time_file)	
+				if [ $time == "0" ]
+				then
+					clear
+					echo "Timer has already ended."
+					echo
+				else
+	                		clear 
+	                		while [ $time -ge 1 ] 
+	                		do
+	                		        clear
+						echo "Now resuming from last run."
+	                		        echo "Timer set to $(time_human $setto)."
+	                		        echo
+	                		        #echo "$time second(s)..."
+						time_human $time
+	                		        time=$((time-1))
+	                		        sleep 1
+	                		done
+					beeper
+				fi
+			else
+				clear
+				echo "You don't have any timer to resume."
+				echo
+			fi
+			;;
+		*)
+			time=$1
+			clear
+			while [ $time -ge 1 ]
+			do
+				clear
+				echo "Timer set to $1 second(s)."
+				echo
+				#echo "$time second(s)..."
+				echo $time
+				time=$((time-1))
+				sleep 1
+			done
+			beeper
+			;;
+		esac
+	fi
+fi
